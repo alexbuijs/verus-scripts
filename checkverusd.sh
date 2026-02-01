@@ -22,18 +22,20 @@ then
 fi
 
 LOCAL_BLOCKS=$(blocks)
-REMOTE_STATUS=$(curl -s $VERUS_CHAIN_STATUS_URL); exit_1=$?
-REMOTE_BLOCKS=$(echo $REMOTE_STATUS | jq -er .info.blocks); exit_2=$?
-BLOCK_DIFFERENCE=$((LOCAL_BLOCKS - REMOTE_BLOCKS)); exit_3=$?
+REMOTE_BLOCKS=$(remote_blocks)
 
-if (( $exit_1 || $exit_2 || $exit_3 ))
+if [[ $? -ne 0 ]]
 then
   SUBJECT="could not get remote blocks"
-  BODY="Failed to get the number of remote blocks.\n\nThe local Verus blockchain has $LOCAL_BLOCKS blocks.\n\n$REMOTE_STATUS"
+  BODY="Failed to get the number of remote blocks after 5 retries.\n\nThe local Verus blockchain has $LOCAL_BLOCKS blocks."
   email "$SUBJECT" "$BODY"
 
   exit 1
-elif (( ${BLOCK_DIFFERENCE#-} > 10 ))
+fi
+
+BLOCK_DIFFERENCE=$((LOCAL_BLOCKS - REMOTE_BLOCKS))
+
+if (( ${BLOCK_DIFFERENCE#-} > 10 ))
 then
   SUBJECT="verus blockchain is out of date"
   BODY="The local Verus blockchain has $LOCAL_BLOCKS blocks. The remote Verus blockchain has $REMOTE_BLOCKS blocks."

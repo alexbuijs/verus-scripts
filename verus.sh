@@ -9,7 +9,7 @@ BACKUP_DIR="$HOME_DIR/Verus/backups"
 VERUS_CMD="$VERUS_CLI_DIR/verus -conf=$VERUS_DIR/VRSC.conf"
 VERUSD_CMD="$VERUS_CLI_DIR/verusd -conf=$VERUS_DIR/VRSC.conf"
 
-VERUS_CHAIN_STATUS_URL="https://insight.verus.io/api/running?q=getInfo"
 LATEST_RELEASE_URL="https://api.github.com/repos/VerusCoin/VerusCoin/releases/latest"
+REMOTE_BLOCKS_URL="https://insight.verus.io/api/getblockcount"
 
 source $(dirname $BASH_SOURCE)/functions.sh

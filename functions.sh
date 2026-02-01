@@ -11,6 +11,20 @@ function blocks() {
   info | jq .blocks
 }
 
+function remote_blocks() {
+  local retries=5
+  local delay=2
+  for ((i=1; i<=retries; i++)); do
+    result=$(curl -sf "$REMOTE_BLOCKS_URL")
+    if [[ $? -eq 0 && "$result" =~ ^[0-9]+$ ]]; then
+      echo "$result"
+      return 0
+    fi
+    sleep $delay
+  done
+  return 1
+}
+
 function running() {
   pgrep -x verusd &>/dev/null
 }
