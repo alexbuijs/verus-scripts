@@ -72,10 +72,6 @@ function self_update() {
   git -C "$(dirname $BASH_SOURCE)" pull
 }
 
-function test() {
-  echo "TEST"
-}
-
 command_not_found_handle() {
   local script="$(dirname $BASH_SOURCE)/$1.sh"
   if [[ -f "$script" ]]; then
