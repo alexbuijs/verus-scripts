@@ -68,6 +68,10 @@ function bootstrap() {
   nohup $(dirname $BASH_SOURCE)/bootstrap.sh > /dev/null 2>&1 &
 }
 
+function self_update() {
+  git -C "$(dirname $BASH_SOURCE)" pull
+}
+
 command_not_found_handle() {
   local script="$(dirname $BASH_SOURCE)/$1.sh"
   if [[ -f "$script" ]]; then
