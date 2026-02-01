@@ -17,7 +17,7 @@ then
     DOWNLOAD_INSTRUCTIONS="Backup failed!"
   else
     BACKUP_FILE="$(ls -t $BACKUP_DIR | head -1).gpg"
-    DOWNLOAD_INSTRUCTIONS="Download wallet backup: aws s3 cp s3://raspberry-verus/$BACKUP_FILE"
+    DOWNLOAD_INSTRUCTIONS="Download wallet backup: aws s3 cp s3://raspberry-verus/$BACKUP_FILE ."
   fi
 
   SUBJECT="A transaction has happened"
