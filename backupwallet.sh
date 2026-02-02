@@ -5,8 +5,8 @@ FILE_NAME="$BACKUP_DIR/veruswallet_`date +%Y%m%dT%H%M%S`.tar.gz"
 
 # Create wallet export and backup
 rm -f $VERUS_DIR/veruswalletexport $VERUS_DIR/veruswalletbackup
-$VERUS_CMD z_exportwallet veruswalletexport
-$VERUS_CMD backupwallet veruswalletbackup
+verus z_exportwallet veruswalletexport
+verus backupwallet veruswalletbackup
 
 # Compress and encrypt wallet
 tar -czf $FILE_NAME -C $VERUS_DIR/ veruswalletbackup veruswalletexport
