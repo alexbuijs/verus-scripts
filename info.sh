@@ -25,32 +25,24 @@ format() {
   esac
 }
 
-# Convert VRSC to EUR using safe.trade and kraken
-verusconvert() {
-  local vrsc=$1
-  local safe_trade=$(curl -s "$SAFE_TRADE_URL" -H 'user-agent: Mozilla/5.0')
-  local kraken=$(curl -s "$KRAKEN_URL")
+# Get VRSC prices from CoinGecko
+get_coingecko_prices() {
+  local response=$(curl -s "$COINGECKO_URL")
 
-  # Debug: check if responses are valid JSON
-  if ! echo "$safe_trade" | jq -e . >/dev/null 2>&1; then
-    echo "Error: Invalid response from safe.trade" >&2
-    echo "Response: $safe_trade" >&2
-    return 1
-  fi
-  if ! echo "$kraken" | jq -e . >/dev/null 2>&1; then
-    echo "Error: Invalid response from Kraken" >&2
-    echo "Response: $kraken" >&2
+  if ! echo "$response" | jq -e . >/dev/null 2>&1; then
+    echo "Error: Invalid response from CoinGecko" >&2
     return 1
   fi
 
-  local vrsc_usdt=$(echo "$safe_trade" | jq -r '.avg_price')
-  local usdt_eur=$(echo "$kraken" | jq -r '.result.USDTEUR.p[1]')
-  local safe_trade_fee=3
-  local usdt=$(echo "$vrsc * $vrsc_usdt - $safe_trade_fee" | bc -l)
-  local kraken_conversion_fee=0.99
-  local kraken_withdrawal_fee=1
-  local eur=$(echo "$usdt * $usdt_eur * $kraken_conversion_fee - $kraken_withdrawal_fee" | bc -l)
-  echo "$eur"
+  local eur=$(echo "$response" | jq -r '."verus-coin".eur')
+  local usd=$(echo "$response" | jq -r '."verus-coin".usd')
+
+  if [[ "$eur" == "null" || "$usd" == "null" ]]; then
+    echo "Error: Could not parse CoinGecko prices" >&2
+    return 1
+  fi
+
+  echo "$eur $usd"
 }
 
 # Querying Verus CLI
@@ -78,10 +70,15 @@ balance_in_eur=0
 
 if [[ "$NO_CONVERSION" == false ]]; then
   if [[ "$APPROXIMATE_CONVERSION" == true ]]; then
-    balance_in_eur=$(verusconvert "$balance")
-    eur_per_vrsc=$(echo "$balance_in_eur / $balance" | bc -l)
+    # Use CoinGecko for approximate conversion (free, no API key needed)
+    prices=$(get_coingecko_prices)
+    if [[ $? -eq 0 ]]; then
+      eur_per_vrsc=$(echo "$prices" | cut -d' ' -f1)
+      usd_per_vrsc=$(echo "$prices" | cut -d' ' -f2)
+      balance_in_eur=$(echo "$balance * $eur_per_vrsc" | bc -l)
+    fi
   else
-    # Note: This requires CMC_API_KEY environment variable to be set
+    # Use CoinMarketCap for accurate conversion (requires API key)
     if [[ -n "$CMC_API_KEY" ]]; then
       cmc=$(curl -s -H "X-CMC_PRO_API_KEY: $CMC_API_KEY" -d "symbol=VRSC&convert=EUR" -G "$CMC_URL")
       eur_per_vrsc=$(echo "$cmc" | jq -r '.data.VRSC[0].quote.EUR.price')
@@ -89,9 +86,13 @@ if [[ "$NO_CONVERSION" == false ]]; then
       usd_per_vrsc=$(echo "$cmc_usd" | jq -r '.data.VRSC[0].quote.USD.price')
       balance_in_eur=$(echo "$balance * $eur_per_vrsc" | bc -l)
     else
-      # Fall back to approximate conversion if no API key
-      balance_in_eur=$(verusconvert "$balance")
-      eur_per_vrsc=$(echo "$balance_in_eur / $balance" | bc -l)
+      # Fall back to CoinGecko if no API key
+      prices=$(get_coingecko_prices)
+      if [[ $? -eq 0 ]]; then
+        eur_per_vrsc=$(echo "$prices" | cut -d' ' -f1)
+        usd_per_vrsc=$(echo "$prices" | cut -d' ' -f2)
+        balance_in_eur=$(echo "$balance * $eur_per_vrsc" | bc -l)
+      fi
     fi
   fi
 fi
