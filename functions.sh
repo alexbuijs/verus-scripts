@@ -1,17 +1,17 @@
 #!/bin/bash
-function email() {
+function _verus_email() {
   echo -e "$2" | mail -s "[raspberry-pi] $1" $MAIL_ADDRESS
 }
 
-function info() {
+function _verus_info() {
   $VERUS_CMD getinfo
 }
 
-function blocks() {
-  info | jq .blocks
+function _verus_blocks() {
+  _verus_info | jq .blocks
 }
 
-function remote_blocks() {
+function _verus_remote_blocks() {
   local retries=5
   local delay=2
   for ((i=1; i<=retries; i++)); do
@@ -25,63 +25,78 @@ function remote_blocks() {
   return 1
 }
 
-function running() {
+function _verus_running() {
   pgrep -x verusd &>/dev/null
 }
 
-function available() {
-  info &>/dev/null
+function _verus_available() {
+  _verus_info &>/dev/null
 }
 
-function wait_for_available() {
-  while ! available; do sleep 10; done
+function _verus_wait_for_available() {
+  while ! _verus_available; do sleep 10; done
 }
 
-function stop() {
+function _verus_stop() {
   $VERUS_CMD stop
-  while running; do sleep 1; done
+  while _verus_running; do sleep 1; done
 }
 
-function start() {
+function _verus_start() {
   $VERUSD_CMD -daemon > /dev/null 2>&1
 }
 
-function restart() {
-  stop
-  start
+function _verus_restart() {
+  _verus_stop
+  _verus_start
 }
 
-function start_and_wait() {
-  start
-  wait_for_available
+function _verus_start_and_wait() {
+  _verus_start
+  _verus_wait_for_available
 }
 
-function backup() {
+function _verus_backup() {
   "$(dirname $BASH_SOURCE)/backupwallet.sh"
 }
 
-function update() {
+function _verus_update() {
   "$(dirname $BASH_SOURCE)/update.sh"
 }
 
-function bootstrap() {
+function _verus_bootstrap() {
   nohup $(dirname $BASH_SOURCE)/bootstrap.sh > /dev/null 2>&1 &
 }
 
-function self_update() {
+function _verus_self_update() {
   git -C "$(dirname $BASH_SOURCE)" pull
 }
 
-function log() {
+function _verus_log() {
   tail -f $VERUS_DIR/debug.log
 }
 
-command_not_found_handle() {
-  local script="$(dirname $BASH_SOURCE)/$1.sh"
-  if [[ -f "$script" ]]; then
-    shift
-    "$script" "$@"
-  else
-    $VERUS_CMD "$@"
-  fi
+function verus() {
+  local cmd="$1"
+  shift
+
+  case "$cmd" in
+    email)           _verus_email "$@" ;;
+    info)            _verus_info "$@" ;;
+    blocks)          _verus_blocks "$@" ;;
+    remote_blocks)   _verus_remote_blocks "$@" ;;
+    running)         _verus_running "$@" ;;
+    available)       _verus_available "$@" ;;
+    wait)            _verus_wait_for_available "$@" ;;
+    stop)            _verus_stop "$@" ;;
+    start)           _verus_start "$@" ;;
+    restart)         _verus_restart "$@" ;;
+    start_and_wait)  _verus_start_and_wait "$@" ;;
+    backup)          _verus_backup "$@" ;;
+    update)          _verus_update "$@" ;;
+    bootstrap)       _verus_bootstrap "$@" ;;
+    self_update)     _verus_self_update "$@" ;;
+    log)             _verus_log "$@" ;;
+    *)               $VERUS_CMD "$cmd" "$@" ;;
+  esac
 }
