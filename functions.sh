@@ -76,6 +76,10 @@ function _verus_log() {
   tail -f $VERUS_DIR/debug.log
 }
 
+function _verus_status() {
+  "$(dirname $BASH_SOURCE)/info.sh" "$@"
+}
+
 function verus() {
   local cmd="$1"
   shift
@@ -97,6 +101,7 @@ function verus() {
     bootstrap)       _verus_bootstrap "$@" ;;
     self_update)     _verus_self_update "$@" ;;
     log)             _verus_log "$@" ;;
+    status)          _verus_status "$@" ;;
     *)               $VERUS_CMD "$cmd" "$@" ;;
   esac
 }
