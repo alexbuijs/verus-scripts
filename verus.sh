@@ -15,3 +15,16 @@ CMC_URL="https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest"
 COINGECKO_URL="https://api.coingecko.com/api/v3/simple/price?ids=verus-coin&vs_currencies=eur,usd"
 
 source $(dirname $BASH_SOURCE)/functions.sh
+
+VERUS_COMMANDS=(stop start restart log self_update backup bootstrap status update)
+
+function verus() {
+  local cmd="$1"
+  shift
+
+  if [[ " ${VERUS_COMMANDS[*]} " =~ " $cmd " ]]; then
+    "_verus_$cmd" "$@"
+  else
+    $VERUS_CMD "$cmd" "$@"
+  fi
+}

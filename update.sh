@@ -48,7 +48,8 @@ _verus_stop
 mv .verus-cli .verus-cli.old
 mv verus-cli .verus-cli
 
-_verus_start_and_wait
+_verus_start
+_verus_wait_for_available
 
 SUBJECT="verus-cli has been updated"
 BODY="Successfully updated verus-cli from version $CURRENT_VERSION to version $LATEST_VERSION.\n\n$(echo $LATEST_RELEASE | jq -r .body)"

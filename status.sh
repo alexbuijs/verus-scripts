@@ -46,7 +46,7 @@ get_coingecko_prices() {
 }
 
 # Querying Verus CLI
-info=$(verus getinfo)
+info=$(_verus_info)
 mining_info=$(verus getmininginfo)
 addresses=$(verus listaddressgroupings)
 block_subsidy=$(verus getblocksubsidy)

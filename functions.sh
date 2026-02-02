@@ -4,7 +4,7 @@ function _verus_email() {
 }
 
 function _verus_info() {
-  $VERUS_CMD getinfo
+  verus getinfo
 }
 
 function _verus_blocks() {
@@ -46,62 +46,35 @@ function _verus_start() {
   $VERUSD_CMD -daemon > /dev/null 2>&1
 }
 
+function _verus_start_bootstrap() {
+  $VERUSD_CMD -daemon -bootstrap > /dev/null 2>&1
+}
+
 function _verus_restart() {
   _verus_stop
   _verus_start
-}
-
-function _verus_start_and_wait() {
-  _verus_start
-  _verus_wait_for_available
-}
-
-function _verus_backup() {
-  "$(dirname $BASH_SOURCE)/backupwallet.sh"
-}
-
-function _verus_update() {
-  "$(dirname $BASH_SOURCE)/update.sh"
-}
-
-function _verus_bootstrap() {
-  nohup $(dirname $BASH_SOURCE)/bootstrap.sh > /dev/null 2>&1 &
-}
-
-function _verus_self_update() {
-  git -C "$(dirname $BASH_SOURCE)" pull
 }
 
 function _verus_log() {
   tail -f $VERUS_DIR/debug.log
 }
 
-function _verus_status() {
-  "$(dirname $BASH_SOURCE)/info.sh" "$@"
+function _verus_self_update() {
+  git -C "$(dirname $BASH_SOURCE)" pull
 }
 
-function verus() {
-  local cmd="$1"
-  shift
+function _verus_backup() {
+  "$(dirname $BASH_SOURCE)/backup.sh"
+}
 
-  case "$cmd" in
-    email)           _verus_email "$@" ;;
-    info)            _verus_info "$@" ;;
-    blocks)          _verus_blocks "$@" ;;
-    remote_blocks)   _verus_remote_blocks "$@" ;;
-    running)         _verus_running "$@" ;;
-    available)       _verus_available "$@" ;;
-    wait)            _verus_wait_for_available "$@" ;;
-    stop)            _verus_stop "$@" ;;
-    start)           _verus_start "$@" ;;
-    restart)         _verus_restart "$@" ;;
-    start_and_wait)  _verus_start_and_wait "$@" ;;
-    backup)          _verus_backup "$@" ;;
-    update)          _verus_update "$@" ;;
-    bootstrap)       _verus_bootstrap "$@" ;;
-    self_update)     _verus_self_update "$@" ;;
-    log)             _verus_log "$@" ;;
-    status)          _verus_status "$@" ;;
-    *)               $VERUS_CMD "$cmd" "$@" ;;
-  esac
+function _verus_bootstrap() {
+  nohup $(dirname $BASH_SOURCE)/bootstrap.sh > /dev/null 2>&1 &
+}
+
+function _verus_status() {
+  "$(dirname $BASH_SOURCE)/status.sh" "$@"
+}
+
+function _verus_update() {
+  "$(dirname $BASH_SOURCE)/update.sh"
 }
