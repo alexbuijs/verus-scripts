@@ -72,6 +72,10 @@ function self_update() {
   git -C "$(dirname $BASH_SOURCE)" pull
 }
 
+function log() {
+  tail -f $VERUS_DIR/debug.log
+}
+
 command_not_found_handle() {
   local script="$(dirname $BASH_SOURCE)/$1.sh"
   if [[ -f "$script" ]]; then
