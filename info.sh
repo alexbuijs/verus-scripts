@@ -28,8 +28,8 @@ format() {
 # Convert VRSC to EUR using safe.trade and kraken
 verusconvert() {
   local vrsc=$1
-  local safe_trade=$(curl -s 'https://safe.trade/api/v2/trade/public/tickers/vrscusdt' -H 'user-agent: Mozilla/5.0')
-  local kraken=$(curl -s 'https://api.kraken.com/0/public/Ticker?pair=USDTEUR')
+  local safe_trade=$(curl -s "$SAFE_TRADE_URL" -H 'user-agent: Mozilla/5.0')
+  local kraken=$(curl -s "$KRAKEN_URL")
   local vrsc_usdt=$(echo "$safe_trade" | jq -r '.avg_price')
   local usdt_eur=$(echo "$kraken" | jq -r '.result.USDTEUR.p[1]')
   local safe_trade_fee=3
@@ -70,9 +70,9 @@ if [[ "$NO_CONVERSION" == false ]]; then
   else
     # Note: This requires CMC_API_KEY environment variable to be set
     if [[ -n "$CMC_API_KEY" ]]; then
-      cmc=$(curl -s -H "X-CMC_PRO_API_KEY: $CMC_API_KEY" -d "symbol=VRSC&convert=EUR" -G https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest)
+      cmc=$(curl -s -H "X-CMC_PRO_API_KEY: $CMC_API_KEY" -d "symbol=VRSC&convert=EUR" -G "$CMC_URL")
       eur_per_vrsc=$(echo "$cmc" | jq -r '.data.VRSC[0].quote.EUR.price')
-      cmc_usd=$(curl -s -H "X-CMC_PRO_API_KEY: $CMC_API_KEY" -d "symbol=VRSC" -G https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest)
+      cmc_usd=$(curl -s -H "X-CMC_PRO_API_KEY: $CMC_API_KEY" -d "symbol=VRSC" -G "$CMC_URL")
       usd_per_vrsc=$(echo "$cmc_usd" | jq -r '.data.VRSC[0].quote.USD.price')
       balance_in_eur=$(echo "$balance * $eur_per_vrsc" | bc -l)
     else
