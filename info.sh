@@ -30,6 +30,19 @@ verusconvert() {
   local vrsc=$1
   local safe_trade=$(curl -s "$SAFE_TRADE_URL" -H 'user-agent: Mozilla/5.0')
   local kraken=$(curl -s "$KRAKEN_URL")
+
+  # Debug: check if responses are valid JSON
+  if ! echo "$safe_trade" | jq -e . >/dev/null 2>&1; then
+    echo "Error: Invalid response from safe.trade" >&2
+    echo "Response: $safe_trade" >&2
+    return 1
+  fi
+  if ! echo "$kraken" | jq -e . >/dev/null 2>&1; then
+    echo "Error: Invalid response from Kraken" >&2
+    echo "Response: $kraken" >&2
+    return 1
+  fi
+
   local vrsc_usdt=$(echo "$safe_trade" | jq -r '.avg_price')
   local usdt_eur=$(echo "$kraken" | jq -r '.result.USDTEUR.p[1]')
   local safe_trade_fee=3
