@@ -15,7 +15,7 @@ function _verus_remote_blocks() {
   local retries=5
   local delay=2
   for ((i=1; i<=retries; i++)); do
-    result=$(curl -sf "$REMOTE_BLOCKS_URL")
+    result=$(curl -sf "$REMOTE_BLOCKS_URL" -H 'User-Agent: Mozilla/5.0')
     if [[ $? -eq 0 && "$result" =~ ^[0-9]+$ ]]; then
       echo "$result"
       return 0
